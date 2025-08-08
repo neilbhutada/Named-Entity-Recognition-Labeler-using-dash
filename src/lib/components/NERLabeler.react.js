@@ -1,3 +1,19 @@
+/**
+ * NERLabeler React Component
+ * 
+ * A React component for Named Entity Recognition (NER) text labeling.
+ * Allows users to select text and assign entity labels interactively.
+ * 
+ * Features:
+ * - Interactive text selection with mouse
+ * - Popup label selection modal
+ * - Entity highlighting and management
+ * - Remove entities functionality
+ * 
+ * Author: Generated with Claude Code
+ * License: MIT
+ */
+
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './NERLabeler.css';

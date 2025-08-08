@@ -30,42 +30,43 @@ pip install -e .
 
 ## Quick Start
 
-```python
-import dash
-from dash import html, callback, Input, Output
-from dash_ner_labeler import NERLabeler
+The easiest way to get started is to run the working demo:
 
-app = dash.Dash(__name__)
+```bash
+# Clone this repository
+git clone https://github.com/yourusername/dash-ner-labeler.git
+cd dash-ner-labeler
 
-app.layout = html.Div([
-    NERLabeler(
-        id='ner-labeler',
-        text="Apple Inc. is based in Cupertino. Tim Cook is the CEO.",
-        labelTypes=['PERSON', 'ORGANIZATION', 'LOCATION'],
-        entities=[]
-    ),
-    html.Div(id='output')
-])
+# Install Python dependencies
+pip install dash
 
-@callback(
-    Output('output', 'children'),
-    Input('ner-labeler', 'entities')
-)
-def display_entities(entities):
-    if not entities:
-        return "No entities labeled yet."
-    
-    return html.Div([
-        html.H3("Labeled Entities:"),
-        html.Ul([
-            html.Li(f"{entity['text']} ({entity['label']})")
-            for entity in entities
-        ])
-    ])
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# Run the demo
+python working_demo.py
 ```
+
+Then visit http://localhost:8051 to see the interactive NER labeler in action!
+
+### How to Use the Demo
+
+1. **Select text** with your mouse in the gray text area
+2. **Click a label button** (PERSON, ORGANIZATION, LOCATION, MISCELLANEOUS)
+3. **View labeled entities** in the list below
+4. **Remove entities** by clicking the red "×" button on any entity card
+5. **Export JSON** data for ML training
+
+### Demo Features
+
+- ✅ Interactive text selection with mouse
+- ✅ Multiple entity types with color coding
+- ✅ Add and remove entity labels
+- ✅ JSON export for machine learning
+- ✅ Real-time visual feedback
+
+## Implementation Status
+
+🚧 **Current Version**: This project includes a fully functional NER labeler implemented using Dash's clientside callbacks (`working_demo.py`).
+
+📋 **Future Development**: The React component foundation is in place for creating a proper Dash component package, but requires additional integration work.
 
 ## Usage
 
@@ -121,28 +122,35 @@ npm run build
 ### Running the Demo
 
 ```bash
-python demo_app.py
+# Interactive demo with full NER functionality
+python working_demo.py
 ```
 
-Visit http://localhost:8050 to see the demo application.
+Visit http://localhost:8051 to see the working NER labeler.
+
+The demo includes helpful startup instructions and runs a fully interactive NER labeling interface.
 
 ### Project Structure
 
 ```
 dash-ner-labeler/
-├── src/lib/                    # React source code
+├── working_demo.py            # 🎯 Main demo - fully functional NER labeler
+├── src/lib/                   # React component source (for future development)
 │   ├── components/
-│   │   ├── NERLabeler.react.js # Main React component
-│   │   └── NERLabeler.css      # Component styles
-│   └── index.js               # Entry point
-├── dash_ner_labeler/          # Python package
+│   │   ├── NERLabeler.react.js # React component foundation
+│   │   └── NERLabeler.css      # Component styling
+│   └── index.js               # Component entry point
+├── dash_ner_labeler/          # Python package structure
 │   ├── __init__.py
-│   ├── NERLabeler.py          # Python wrapper
-│   └── _imports_.py
-├── demo_app.py                # Demo application
-├── package.json               # Node.js configuration
+│   ├── NERLabeler.py          # Python component wrapper
+│   └── metadata.json          # Component metadata
+├── build/                     # Built JavaScript files
+├── package.json               # Node.js dependencies and scripts
 ├── webpack.config.js          # Build configuration
-└── setup.py                   # Python package setup
+├── setup.py                   # Python package setup
+├── requirements.txt           # Python dependencies
+├── .gitignore                 # Git ignore patterns
+└── README.md                  # This documentation
 ```
 
 ## Customization

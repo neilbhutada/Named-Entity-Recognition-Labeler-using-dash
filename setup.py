@@ -1,3 +1,9 @@
+"""
+Setup configuration for dash-ner-labeler package.
+
+This package provides a Dash component for Named Entity Recognition (NER) text labeling.
+"""
+
 import io
 from setuptools import setup, find_packages
 
