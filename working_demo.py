@@ -272,9 +272,28 @@ def display_entities(entities):
                     'marginRight': '10px'
                 }
             ),
-            html.Span(f'"{entity["text"]}"', style={'fontWeight': 'bold'}),
+            html.Span(f'"{entity["text"]}"', style={'fontWeight': 'bold', 'flex': '1'}),
             html.Span(f" (position {entity['start']}-{entity['end']})",
-                     style={'color': '#6c757d', 'fontSize': '12px'})
+                     style={'color': '#6c757d', 'fontSize': '12px', 'marginRight': '10px'}),
+            html.Button(
+                '×',
+                id={'type': 'remove-entity', 'index': entity['id']},
+                style={
+                    'background': '#dc3545',
+                    'color': 'white',
+                    'border': 'none',
+                    'borderRadius': '50%',
+                    'width': '25px',
+                    'height': '25px',
+                    'cursor': 'pointer',
+                    'fontSize': '16px',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                    'justifyContent': 'center',
+                    'lineHeight': '1'
+                },
+                title='Remove entity'
+            )
         ], style={
             'display': 'flex',
             'alignItems': 'center', 
@@ -287,6 +306,41 @@ def display_entities(entities):
         entity_cards.append(card)
     
     return html.Div(entity_cards)
+
+# Callback to handle entity removal
+@callback(
+    Output('entities-store', 'data', allow_duplicate=True),
+    Input({'type': 'remove-entity', 'index': dash.dependencies.ALL}, 'n_clicks'),
+    State('entities-store', 'data'),
+    prevent_initial_call=True
+)
+def remove_entity(n_clicks_list, entities):
+    ctx = dash.callback_context
+    if not ctx.triggered or not any(n_clicks_list):
+        return entities
+    
+    # Get the triggered input ID  
+    triggered = ctx.triggered[0]
+    if triggered['value'] is None or triggered['value'] == 0:
+        return entities
+        
+    # Extract entity ID from the triggered prop_id
+    # Format will be: {"index":123.456,"type":"remove-entity"}.n_clicks
+    prop_id = triggered['prop_id']
+    try:
+        # Find the entity ID in the prop_id string
+        import re
+        match = re.search(r'"index":([^,}]+)', prop_id)
+        if match:
+            entity_id = float(match.group(1))  # Convert to float since IDs are timestamp + random
+            
+            # Filter out the entity with the matching ID
+            updated_entities = [entity for entity in entities if entity['id'] != entity_id]
+            return updated_entities
+    except:
+        pass
+    
+    return entities
 
 if __name__ == '__main__':
     app.run(debug=True, port=8051)
