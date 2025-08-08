@@ -63,6 +63,14 @@ dist/
 *.tgz
 *.tar.gz
 
+# Package lock files (auto-generated)
+package-lock.json
+yarn.lock
+
+# Built JavaScript files in Python package
+dash_ner_labeler/*.min.js
+dash_ner_labeler/*.js
+
 # Logs
 logs
 *.log

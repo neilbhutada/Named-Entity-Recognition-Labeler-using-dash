@@ -1,0 +1,50 @@
+{
+  "src/lib/components/NERLabeler.react.js": {
+    "description": "A component for Named Entity Recognition text labeling",
+    "displayName": "NERLabeler",
+    "methods": [],
+    "props": {
+      "id": {
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": "The ID used to identify this component in Dash callbacks."
+      },
+      "text": {
+        "type": {
+          "name": "string"
+        },
+        "required": true,
+        "description": "The text to be labeled for NER."
+      },
+      "entities": {
+        "type": {
+          "name": "arrayOf",
+          "value": {
+            "name": "object"
+          }
+        },
+        "required": false,
+        "description": "List of already labeled entities."
+      },
+      "labelTypes": {
+        "type": {
+          "name": "arrayOf",
+          "value": {
+            "name": "string"
+          }
+        },
+        "required": false,
+        "description": "List of available label types."
+      },
+      "setProps": {
+        "type": {
+          "name": "func"
+        },
+        "required": false,
+        "description": "Dash-assigned callback that should be called to report property changes to Dash, to make them available for callbacks."
+      }
+    }
+  }
+}

@@ -200,4 +200,4 @@ def get_label_border_color(label):
     return colors.get(label.upper(), '#495057')
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8050)
+    app.run(debug=True, port=8050)
