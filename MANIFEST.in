@@ -1,0 +1,3 @@
+recursive-include dash_ner_labeler *.py
+recursive-include build *
+global-exclude *.py[co]

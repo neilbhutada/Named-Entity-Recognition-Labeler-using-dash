@@ -1,0 +1,44 @@
+{
+  "name": "dash-ner-labeler",
+  "version": "0.1.0",
+  "description": "A Plotly Dash component for Named Entity Recognition (NER) text labeling",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "build:watch": "webpack --mode development --watch",
+    "start": "webpack serve --mode development"
+  },
+  "dependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "prop-types": "^15.7.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.0",
+    "@babel/preset-env": "^7.12.0",
+    "@babel/preset-react": "^7.12.0",
+    "babel-loader": "^8.2.0",
+    "css-loader": "^6.0.0",
+    "style-loader": "^3.0.0",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0",
+    "webpack-dev-server": "^4.0.0"
+  },
+  "files": [
+    "build/*",
+    "dash_ner_labeler/*",
+    "setup.py",
+    "README.md"
+  ],
+  "keywords": [
+    "dash",
+    "plotly",
+    "react",
+    "ner",
+    "text-annotation",
+    "named-entity-recognition"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
