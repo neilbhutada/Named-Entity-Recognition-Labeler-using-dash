@@ -4,8 +4,8 @@
 }
 
 .ner-text-container {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
     border-radius: 6px;
     padding: 20px;
     line-height: 1.6;
@@ -13,6 +13,7 @@
     min-height: 200px;
     cursor: text;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .ner-entity {
@@ -48,6 +49,19 @@
 
 .ner-entity:hover .ner-label-badge {
     opacity: 1;
+}
+
+.ner-label-dropdown {
+    position: absolute;
+    z-index: 1000;
+}
+
+.ner-label-dropdown select {
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fff;
 }
 
 /* Entity type colors */
