@@ -56,24 +56,29 @@ class NERLabeler extends Component {
 
         const range = selection.getRangeAt(0);
         const selectedText = selection.toString().trim();
-        
+
         if (selectedText.length === 0) return;
 
-        // Calculate position for label modal
-        const rect = range.getBoundingClientRect();
-        const modalPosition = {
-            x: rect.left + window.scrollX,
-            y: rect.bottom + window.scrollY + 5
-        };
-
+        // Save selection but do not show modal yet
         this.setState({
             selectedText,
             selectedRange: {
                 startOffset: this.getAbsoluteOffset(range.startContainer, range.startOffset),
                 endOffset: this.getAbsoluteOffset(range.endContainer, range.endOffset)
-            },
+            }
+        });
+    }
+
+    handleContextMenu = (e) => {
+        if (!this.textRef.current?.contains(e.target)) return;
+
+        if (!this.state.selectedText) return;
+
+        e.preventDefault();
+
+        this.setState({
             showLabelModal: true,
-            modalPosition
+            modalPosition: { x: e.pageX, y: e.pageY }
         });
     }
 
@@ -152,11 +157,9 @@ class NERLabeler extends Component {
                     key={entity.id}
                     className={`ner-entity ner-${entity.label.toLowerCase()}`}
                     title={`${entity.label}: ${entity.text}`}
-                    onClick={(e) => {
+                    onDoubleClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm(`Remove "${entity.text}" (${entity.label})?`)) {
-                            this.removeEntity(entity.id);
-                        }
+                        this.removeEntity(entity.id);
                     }}
                 >
                     {entity.text}
@@ -185,16 +188,17 @@ class NERLabeler extends Component {
 
         return (
             <div className="ner-labeler-container">
-                <div 
+                <div
                     ref={this.textRef}
                     className="ner-text-container"
                     style={{ userSelect: 'text' }}
+                    onContextMenu={this.handleContextMenu}
                 >
                     {this.renderHighlightedText()}
                 </div>
 
                 {showLabelModal && (
-                    <div 
+                    <div
                         className="ner-label-modal"
                         style={{
                             position: 'absolute',
@@ -203,46 +207,22 @@ class NERLabeler extends Component {
                             zIndex: 1000
                         }}
                     >
-                        <div className="ner-modal-content">
-                            <h4>Select Label Type:</h4>
+                        <select
+                            className="ner-label-select"
+                            autoFocus
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value) this.handleLabelSelection(value);
+                            }}
+                            onBlur={() => this.setState({ showLabelModal: false })}
+                        >
+                            <option value="">Select label</option>
                             {labelTypes.map(labelType => (
-                                <button
-                                    key={labelType}
-                                    className={`ner-label-btn ner-${labelType.toLowerCase()}`}
-                                    onClick={() => this.handleLabelSelection(labelType)}
-                                >
+                                <option key={labelType} value={labelType}>
                                     {labelType}
-                                </button>
+                                </option>
                             ))}
-                            <button 
-                                className="ner-cancel-btn"
-                                onClick={() => this.setState({ showLabelModal: false })}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {this.props.entities && this.props.entities.length > 0 && (
-                    <div className="ner-entities-summary">
-                        <h4>Labeled Entities ({this.props.entities.length}):</h4>
-                        <div className="ner-entities-list">
-                            {this.props.entities.map(entity => (
-                                <div key={entity.id} className="ner-entity-item">
-                                    <span className={`ner-entity-label ner-${entity.label.toLowerCase()}`}>
-                                        {entity.label}
-                                    </span>
-                                    <span className="ner-entity-text">{entity.text}</span>
-                                    <button 
-                                        className="ner-remove-btn"
-                                        onClick={() => this.removeEntity(entity.id)}
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
+                        </select>
                     </div>
                 )}
             </div>
