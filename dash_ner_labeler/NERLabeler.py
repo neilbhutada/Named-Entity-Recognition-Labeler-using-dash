@@ -4,19 +4,23 @@ from dash.development.base_component import Component, _explicitize_args
 
 
 class NERLabeler(Component):
-    """A Dash component for Named Entity Recognition (NER) text labeling.
+    """A Dash component for Named Entity Recognition (NER) text labeling with multi-user support.
     
-    This component allows users to manually highlight and label text for NER tasks.
+    This component allows multiple users to manually highlight and label text for NER tasks.
     Users can select text with their mouse and assign entity labels like PERSON, 
-    ORGANIZATION, LOCATION, etc.
+    ORGANIZATION, LOCATION, etc. All annotations are tracked with user attribution and timestamps.
 
     Keyword arguments:
     - id (string; optional): The ID used to identify this component in Dash callbacks.
     - text (string; required): The text to be labeled for NER.
     - entities (list; optional): List of already labeled entities. Each entity should be 
-      a dictionary with keys: 'id', 'text', 'label', 'start', 'end'.
+      a dictionary with keys: 'id', 'text', 'label', 'start', 'end', 'user_id', 'username', 'timestamp'.
     - labelTypes (list; optional): List of available label types for entity labeling.
       Default: ['PERSON', 'ORGANIZATION', 'LOCATION', 'MISCELLANEOUS']
+    - currentUser (dict; optional): Current user information with keys: 'id', 'name'
+    - annotationHistory (list; optional): List of annotation history entries
+    - showUserInfo (boolean; optional): Whether to display user information. Default: True
+    - showHistory (boolean; optional): Whether to display annotation history. Default: True
     """
     
     @_explicitize_args
@@ -25,12 +29,16 @@ class NERLabeler(Component):
                  text=Component.REQUIRED,
                  entities=Component.UNDEFINED,
                  labelTypes=Component.UNDEFINED,
+                 currentUser=Component.UNDEFINED,
+                 annotationHistory=Component.UNDEFINED,
+                 showUserInfo=Component.UNDEFINED,
+                 showHistory=Component.UNDEFINED,
                  **kwargs):
-        self._prop_names = ['id', 'text', 'entities', 'labelTypes']
+        self._prop_names = ['id', 'text', 'entities', 'labelTypes', 'currentUser', 'annotationHistory', 'showUserInfo', 'showHistory']
         self._type = 'NERLabeler'
         self._namespace = 'dash_ner_labeler'
         self._valid_wildcard_attributes = []
-        self.available_properties = ['id', 'text', 'entities', 'labelTypes']
+        self.available_properties = ['id', 'text', 'entities', 'labelTypes', 'currentUser', 'annotationHistory', 'showUserInfo', 'showHistory']
         self.available_wildcard_properties = []
         
         _explicit_args = kwargs.pop('_explicit_args')
@@ -46,7 +54,7 @@ class NERLabeler(Component):
 
 
 # Set component metadata
-NERLabeler._prop_names = ['id', 'text', 'entities', 'labelTypes']
+NERLabeler._prop_names = ['id', 'text', 'entities', 'labelTypes', 'currentUser', 'annotationHistory', 'showUserInfo', 'showHistory']
 NERLabeler._type = 'NERLabeler'
 NERLabeler._namespace = 'dash_ner_labeler'
 
@@ -67,7 +75,11 @@ else:
                 'id': {'type': 'string', 'required': False},
                 'text': {'type': 'string', 'required': True},
                 'entities': {'type': 'list', 'required': False},
-                'labelTypes': {'type': 'list', 'required': False}
+                'labelTypes': {'type': 'list', 'required': False},
+                'currentUser': {'type': 'dict', 'required': False},
+                'annotationHistory': {'type': 'list', 'required': False},
+                'showUserInfo': {'type': 'boolean', 'required': False},
+                'showHistory': {'type': 'boolean', 'required': False}
             }
         }
     }

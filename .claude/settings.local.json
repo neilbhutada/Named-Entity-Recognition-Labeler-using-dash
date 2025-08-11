@@ -6,7 +6,9 @@
       "Bash(mkdir:*)",
       "Bash(npm install)",
       "Bash(npm run build:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(python test:*)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

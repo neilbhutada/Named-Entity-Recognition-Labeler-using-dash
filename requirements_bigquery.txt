@@ -1,0 +1,14 @@
+# Core Dash requirements
+dash>=2.10.0
+plotly>=5.15.0
+pandas>=1.5.0
+
+# BigQuery integration
+google-cloud-bigquery>=3.11.0
+google-auth>=2.20.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# Additional utilities
+python-dateutil>=2.8.0
+pytz>=2023.3

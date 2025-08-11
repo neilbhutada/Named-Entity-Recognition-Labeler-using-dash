@@ -1,14 +1,17 @@
 /**
  * NERLabeler React Component
  * 
- * A React component for Named Entity Recognition (NER) text labeling.
- * Allows users to select text and assign entity labels interactively.
+ * A React component for Named Entity Recognition (NER) text labeling with multi-user support.
+ * Allows multiple users to select text and assign entity labels interactively.
  * 
  * Features:
  * - Interactive text selection with mouse
  * - Popup label selection modal
  * - Entity highlighting and management
  * - Remove entities functionality
+ * - Multi-user annotation tracking with timestamps
+ * - Annotation history with user attribution
+ * - User information display
  * 
  * Author: Generated with Claude Code
  * License: MIT
@@ -25,7 +28,9 @@ class NERLabeler extends Component {
             selectedText: '',
             selectedRange: null,
             showLabelModal: false,
-            modalPosition: { x: 0, y: 0 }
+            modalPosition: { x: 0, y: 0 },
+            showUserModal: false,
+            tempUsername: ''
         };
         this.textRef = React.createRef();
     }
@@ -98,18 +103,44 @@ class NERLabeler extends Component {
 
     handleLabelSelection = (labelType) => {
         const { selectedRange, selectedText } = this.state;
+        const { currentUser } = this.props;
+        
+        if (!currentUser || !currentUser.id) {
+            alert('Please set a username first!');
+            return;
+        }
+        
+        const timestamp = new Date().toISOString();
         const newEntity = {
             text: selectedText,
             label: labelType,
             start: selectedRange.startOffset,
             end: selectedRange.endOffset,
-            id: Date.now() + Math.random()
+            id: Date.now() + Math.random(),
+            user_id: currentUser.id,
+            username: currentUser.name,
+            timestamp: timestamp
         };
 
         const updatedEntities = [...(this.props.entities || []), newEntity];
         
+        // Add to annotation history
+        const historyEntry = {
+            id: Date.now() + Math.random() + 0.1,
+            action: 'add',
+            entity: newEntity,
+            user_id: currentUser.id,
+            username: currentUser.name,
+            timestamp: timestamp
+        };
+        
+        const updatedHistory = [...(this.props.annotationHistory || []), historyEntry];
+        
         if (this.props.setProps) {
-            this.props.setProps({ entities: updatedEntities });
+            this.props.setProps({ 
+                entities: updatedEntities,
+                annotationHistory: updatedHistory
+            });
         }
 
         this.setState({ 
@@ -122,9 +153,33 @@ class NERLabeler extends Component {
     }
 
     removeEntity = (entityId) => {
-        const updatedEntities = this.props.entities.filter(entity => entity.id !== entityId);
+        const { currentUser, entities, annotationHistory } = this.props;
+        
+        if (!currentUser || !currentUser.id) {
+            alert('Please set a username first!');
+            return;
+        }
+        
+        const entityToRemove = entities.find(entity => entity.id === entityId);
+        const updatedEntities = entities.filter(entity => entity.id !== entityId);
+        
+        // Add to annotation history
+        const historyEntry = {
+            id: Date.now() + Math.random(),
+            action: 'remove',
+            entity: entityToRemove,
+            user_id: currentUser.id,
+            username: currentUser.name,
+            timestamp: new Date().toISOString()
+        };
+        
+        const updatedHistory = [...(annotationHistory || []), historyEntry];
+        
         if (this.props.setProps) {
-            this.props.setProps({ entities: updatedEntities });
+            this.props.setProps({ 
+                entities: updatedEntities,
+                annotationHistory: updatedHistory
+            });
         }
     }
 
@@ -151,7 +206,7 @@ class NERLabeler extends Component {
                 <span
                     key={entity.id}
                     className={`ner-entity ner-${entity.label.toLowerCase()}`}
-                    title={`${entity.label}: ${entity.text}`}
+                    title={`${entity.label}: ${entity.text}\nAnnotated by: ${entity.username || 'Unknown'} at ${entity.timestamp ? new Date(entity.timestamp).toLocaleString() : 'Unknown time'}`}
                     onClick={(e) => {
                         e.stopPropagation();
                         if (window.confirm(`Remove "${entity.text}" (${entity.label})?`)) {
@@ -161,6 +216,11 @@ class NERLabeler extends Component {
                 >
                     {entity.text}
                     <span className="ner-label-badge">{entity.label}</span>
+                    {entity.username && (
+                        <span className="ner-user-badge" title={`By ${entity.username} at ${entity.timestamp ? new Date(entity.timestamp).toLocaleString() : 'Unknown time'}`}>
+                            @{entity.username}
+                        </span>
+                    )}
                 </span>
             );
 
@@ -179,12 +239,93 @@ class NERLabeler extends Component {
         return result;
     }
 
+    setUsername = (username) => {
+        if (this.props.setProps) {
+            this.props.setProps({
+                currentUser: {
+                    id: Date.now() + Math.random(),
+                    name: username
+                }
+            });
+        }
+        this.setState({ showUserModal: false, tempUsername: '' });
+    }
+
+    renderUserInfo = () => {
+        const { currentUser, showUserInfo = true } = this.props;
+        
+        if (!showUserInfo) return null;
+        
+        return (
+            <div className="ner-user-info">
+                <h4>Current User:</h4>
+                {currentUser && currentUser.name ? (
+                    <div className="ner-current-user">
+                        <span className="ner-username">@{currentUser.name}</span>
+                        <button 
+                            className="ner-change-user-btn"
+                            onClick={() => this.setState({ showUserModal: true, tempUsername: '' })}
+                        >
+                            Change User
+                        </button>
+                    </div>
+                ) : (
+                    <button 
+                        className="ner-set-user-btn"
+                        onClick={() => this.setState({ showUserModal: true, tempUsername: '' })}
+                    >
+                        Set Username
+                    </button>
+                )}
+            </div>
+        );
+    }
+
+    renderAnnotationHistory = () => {
+        const { annotationHistory = [], showHistory = true } = this.props;
+        
+        if (!showHistory || annotationHistory.length === 0) return null;
+        
+        const sortedHistory = [...annotationHistory].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        return (
+            <div className="ner-annotation-history">
+                <h4>Annotation History ({annotationHistory.length} actions):</h4>
+                <div className="ner-history-list">
+                    {sortedHistory.slice(0, 10).map(entry => (
+                        <div key={entry.id} className="ner-history-item">
+                            <span className={`ner-action-badge ner-action-${entry.action}`}>
+                                {entry.action === 'add' ? '+' : '×'}
+                            </span>
+                            <span className="ner-history-text">
+                                <strong>@{entry.username}</strong> {entry.action === 'add' ? 'added' : 'removed'} 
+                                <span className={`ner-entity-label ner-${entry.entity.label.toLowerCase()}`}>
+                                    {entry.entity.label}
+                                </span> 
+                                "{entry.entity.text}"
+                            </span>
+                            <span className="ner-history-time">
+                                {new Date(entry.timestamp).toLocaleString()}
+                            </span>
+                        </div>
+                    ))}
+                    {annotationHistory.length > 10 && (
+                        <div className="ner-history-more">
+                            ... and {annotationHistory.length - 10} more actions
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     render() {
         const { labelTypes = ['PERSON', 'ORGANIZATION', 'LOCATION', 'MISCELLANEOUS'] } = this.props;
-        const { showLabelModal, modalPosition } = this.state;
+        const { showLabelModal, modalPosition, showUserModal, tempUsername } = this.state;
 
         return (
             <div className="ner-labeler-container">
+                {this.renderUserInfo()}
                 <div 
                     ref={this.textRef}
                     className="ner-text-container"
@@ -224,6 +365,37 @@ class NERLabeler extends Component {
                     </div>
                 )}
 
+                {showUserModal && (
+                    <div className="ner-user-modal-overlay">
+                        <div className="ner-user-modal">
+                            <h4>Set Username</h4>
+                            <input
+                                type="text"
+                                placeholder="Enter your username"
+                                value={tempUsername}
+                                onChange={(e) => this.setState({ tempUsername: e.target.value })}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter' && tempUsername.trim()) {
+                                        this.setUsername(tempUsername.trim());
+                                    }
+                                }}
+                                autoFocus
+                            />
+                            <div className="ner-user-modal-buttons">
+                                <button 
+                                    onClick={() => tempUsername.trim() && this.setUsername(tempUsername.trim())}
+                                    disabled={!tempUsername.trim()}
+                                >
+                                    Set
+                                </button>
+                                <button onClick={() => this.setState({ showUserModal: false, tempUsername: '' })}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {this.props.entities && this.props.entities.length > 0 && (
                     <div className="ner-entities-summary">
                         <h4>Labeled Entities ({this.props.entities.length}):</h4>
@@ -234,6 +406,9 @@ class NERLabeler extends Component {
                                         {entity.label}
                                     </span>
                                     <span className="ner-entity-text">{entity.text}</span>
+                                    {entity.username && (
+                                        <span className="ner-entity-user">by @{entity.username}</span>
+                                    )}
                                     <button 
                                         className="ner-remove-btn"
                                         onClick={() => this.removeEntity(entity.id)}
@@ -245,6 +420,8 @@ class NERLabeler extends Component {
                         </div>
                     </div>
                 )}
+                
+                {this.renderAnnotationHistory()}
             </div>
         );
     }
@@ -258,15 +435,35 @@ NERLabeler.propTypes = {
         text: PropTypes.string.isRequired,
         label: PropTypes.string.isRequired,
         start: PropTypes.number.isRequired,
-        end: PropTypes.number.isRequired
+        end: PropTypes.number.isRequired,
+        user_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        username: PropTypes.string,
+        timestamp: PropTypes.string
     })),
     labelTypes: PropTypes.arrayOf(PropTypes.string),
+    currentUser: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        name: PropTypes.string
+    }),
+    annotationHistory: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+        action: PropTypes.oneOf(['add', 'remove']).isRequired,
+        entity: PropTypes.object.isRequired,
+        user_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        username: PropTypes.string,
+        timestamp: PropTypes.string
+    })),
+    showUserInfo: PropTypes.bool,
+    showHistory: PropTypes.bool,
     setProps: PropTypes.func
 };
 
 NERLabeler.defaultProps = {
     entities: [],
-    labelTypes: ['PERSON', 'ORGANIZATION', 'LOCATION', 'MISCELLANEOUS']
+    labelTypes: ['PERSON', 'ORGANIZATION', 'LOCATION', 'MISCELLANEOUS'],
+    annotationHistory: [],
+    showUserInfo: true,
+    showHistory: true
 };
 
 export default NERLabeler;

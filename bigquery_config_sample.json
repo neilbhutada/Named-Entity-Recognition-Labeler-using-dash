@@ -1,0 +1,18 @@
+{
+  "project_id": "your-gcp-project-id",
+  "dataset_id": "ner_labeling",
+  "credentials_path": null,
+  "default_batch_size": 10,
+  "auto_assign_texts": true,
+  "require_confidence_scores": false,
+  "default_label_types": [
+    "PERSON",
+    "ORGANIZATION",
+    "LOCATION",
+    "MISCELLANEOUS",
+    "DATE",
+    "MONEY",
+    "PRODUCT",
+    "EVENT"
+  ]
+}
